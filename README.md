@@ -20,7 +20,7 @@ git submodule add https://github.com/apolloclark/gradle-build
 # create the project specific Gradle config files, using "packer-nodejs" as an example:
 [settings.gradle]
 rootProject.name = 'packer-nodejs'
-include ':gradle:centos7.6', ':gradle:ubuntu18.04', ':gradle:ubuntu16.04'
+include ':gradle-build:centos7.6', ':gradle-build:ubuntu18.04', ':gradle-build:ubuntu16.04'
 
 [gradle.properties]
 package_name=nodejs
