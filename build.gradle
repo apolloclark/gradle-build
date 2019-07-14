@@ -37,8 +37,35 @@ ext.docker_email    = System.properties['docker_email']
 ext.base_image      = "default"
 ext.image_name      = "default"
 ext.build_date      = new Date().format("yyyyMMdd", TimeZone.getTimeZone('UTC'))
+ext.packer_filename = "default"
+ext.packer_args = []
 
 
+task('buildInfoBase') {
+    project.packer_args = [
+      'validate',
+      '-var', "build_date=$build_date",
+      '-var', "base_image=$base_image",
+      '-var', "image_name=$image_name",
+      '-var', "docker_username=$docker_username",
+      '-var', "package_name=$package_name",
+      '-var', "package_version=$package_version",
+      '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date"
+    ]
+    println "called buildInfoBase"
+}
+task('buildInfoBash') {
+    dependsOn 'buildInfoBase'
+    println "called buildInfoBash"
+    project.packer_filename = 'packer_docker_var_ansible.json'
+    project.packer_args << project.packer_filename
+}
+task('buildInfo') {
+    dependsOn 'buildInfoBash'
+    println "called buildInfo"
+    println "packer_filename = $project.packer_filename"
+    println "packer_args = $packer_args"
+}
 
 // create dynamic reusable code
 subprojects {
@@ -91,7 +118,6 @@ subprojects {
         task('clean') {
             description = 'Clean any previously built images and containers.'
 
-            // tasks = ['cleanImage','cleanImageDate','cleanContainer']
             dependsOn 'cleanImage'
             dependsOn 'cleanImageDate'
             dependsOn 'cleanContainer'
@@ -140,108 +166,57 @@ subprojects {
 
 
         task('build') {
-            description = 'Build.'
+            description = 'Build, using Ansible to provision.'
 
-            dependsOn 'buildDockerAnsible'
+            dependsOn 'buildBase'
+            project.packer_filename = 'packer_docker_var_ansible.json'
+            project.packer_args << project.packer_filename
+            tasks['buildDocker']
         }
         task('buildBash') {
-            description = 'Build.'
+            description = 'Build, using Bash to provision.'
 
-            dependsOn 'buildDockerBash'
+            dependsOn 'buildBase'
+            project.packer_filename = 'packer_docker_var_bash.json'
+            project.packer_args << project.packer_filename
+            tasks['buildDocker']
         }
-        // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
-        task('validatePackerDockerAnsible', type: Exec) {
-            description = 'Validate the Packer file, for Docker.'
-            // dependsOn 'clean'
-            inputs.file '../../packer-build/packer_docker_var_ansible.json'
-            inputs.files fileTree(dir: "../../scripts")
-            inputs.files fileTree(dir: "../../files")
-            inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
-        
-            workingDir = '../../packer-build'
-            executable = 'packer'
-            args = [
-              'validate',
+        task('buildBase') {
+            description = 'Set the shared parameters used by Packer.'
+            project.packer_args = [
               '-var', "build_date=$build_date",
               '-var', "base_image=$base_image",
               '-var', "image_name=$image_name",
               '-var', "docker_username=$docker_username",
               '-var', "package_name=$package_name",
               '-var', "package_version=$package_version",
-              '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date",
-              'packer_docker_var_ansible.json'
+              '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date"
             ]
         }
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
-        task('buildDockerAnsible', type: Exec) {
+        task('validatePackerDocker', type: Exec) {
+            description = 'Validate the Packer file, for Docker.'
+            inputs.file '../../packer-build/$packer_filename'
+            inputs.files fileTree(dir: "../../scripts")
+            inputs.files fileTree(dir: "../../files")
+            inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
+        
+            workingDir = '../../packer-build'
+            executable = 'packer'
+            args = project.packer_args.add(0, 'validate')
+        }
+        // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
+        task('buildDocker', type: Exec) {
             description = 'Build the Docker image.'
             dependsOn 'validatePackerDockerAnsible'
-            inputs.file '../../packer-build/packer_docker_var_ansible.json'
+            inputs.file '../../packer-build/$packer_filename'
             inputs.files fileTree(dir: "../../scripts")
             inputs.files fileTree(dir: "../../files")
             inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
         
             workingDir = '../../packer-build'
             executable = 'packer'
-            args = [
-              'build', '-force',
-              '-var', "build_date=$build_date",
-              '-var', "base_image=$base_image",
-              '-var', "image_name=$image_name",
-              '-var', "docker_username=$docker_username",
-              '-var', "package_name=$package_name",
-              '-var', "package_version=$package_version",
-              '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date",
-              'packer_docker_var_ansible.json'
-            ]
-
-            outputs.file "manifest.json"
-        }
-        // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
-        task('validatePackerDockerBash', type: Exec) {
-            description = 'Validate the Packer file, for Docker.'
-            // dependsOn 'clean'
-            inputs.file '../../packer-build/packer_docker_var_bash.json'
-            inputs.files fileTree(dir: "../../scripts")
-            inputs.files fileTree(dir: "../../files")
-            inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
-        
-            workingDir = '../../packer-build'
-            executable = 'packer'
-            args = [
-              'validate',
-              '-var', "build_date=$build_date",
-              '-var', "base_image=$base_image",
-              '-var', "image_name=$image_name",
-              '-var', "docker_username=$docker_username",
-              '-var', "package_name=$package_name",
-              '-var', "package_version=$package_version",
-              '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date",
-              'packer_docker_var_bash.json'
-            ]
-        }
-        // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
-        task('buildDockerBash', type: Exec) {
-            description = 'Build the Docker image.'
-            dependsOn 'validatePackerDockerBash'
-            inputs.file '../../packer-build/packer_docker_var_bash.json'
-            inputs.files fileTree(dir: "../../scripts")
-            inputs.files fileTree(dir: "../../files")
-            inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
-        
-            workingDir = '../../packer-build'
-            executable = 'packer'
-            args = [
-              'build', '-force',
-              '-var', "build_date=$build_date",
-              '-var', "base_image=$base_image",
-              '-var', "image_name=$image_name",
-              '-var', "docker_username=$docker_username",
-              '-var', "package_name=$package_name",
-              '-var', "package_version=$package_version",
-              '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date",
-              'packer_docker_var_bash.json'
-            ]
+            args = project.packer_args.addAll(0, ['build', '-force'])
 
             outputs.file "manifest.json"
         }
@@ -276,21 +251,23 @@ subprojects {
         task('push') {
             description = 'Clean any previously built images and containers.'
 
+            dependsOn 'test'
+            dependsOn 'pushImage'
+            dependsOn 'pushImageDate'
+        }
+        task('pushBash'){
+            dependsOn 'testBash'
             dependsOn 'pushImage'
             dependsOn 'pushImageDate'
         }
         task('pushImage', type: DockerPushImage) {
-            description = 'Clean any previously built images.'
-            dependsOn 'test'
-
+            description = 'Push a Docker image.'
             imageName = "$docker_username/$package_name"
             tag = "$package_version-${project.image_name}"
 
         }
         task('pushImageDate', type: DockerPushImage) {
             description = 'Clean any previously built images.'
-            dependsOn 'test'
-
             imageName = "$docker_username/$package_name"
             tag = "$package_version-${project.image_name}-$build_date"
         }
