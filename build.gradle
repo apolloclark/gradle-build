@@ -144,6 +144,11 @@ subprojects {
 
             dependsOn 'buildDockerAnsible'
         }
+        task('buildBash') {
+            description = 'Build.'
+
+            dependsOn 'buildDockerBash'
+        }
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
         task('validatePackerDockerAnsible', type: Exec) {
             description = 'Validate the Packer file, for Docker.'
@@ -259,6 +264,11 @@ subprojects {
             workingDir '../../spec/'
             script "rspec"
             scriptArgs "Dockerfile_${project.image_name}.rb"
+        }
+        task('testBash') {
+            description = 'Build.'
+
+            dependsOn 'buildBash'
         }
 
 
