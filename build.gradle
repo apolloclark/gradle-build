@@ -171,20 +171,18 @@ subprojects {
         task('build') {
             description = 'Build, using Ansible to provision.'
 
-            dependsOn 'buildBase'
-            packer_filename = 'packer_docker_var_ansible.json'
-            packer_args << packer_filename
-            tasks['buildDocker']
+            dependsOn 'buildConfigBase'
+            dependsOn 'buildConfigAnsible'
+            dependsOn 'buildDocker'
         }
         task('buildBash') {
             description = 'Build, using Bash to provision.'
 
-            dependsOn 'buildBase'
-            packer_filename = 'packer_docker_var_bash.json'
-            packer_args << packer_filename
-            tasks['buildDocker']
+            dependsOn 'buildConfigBase'
+            dependsOn 'buildConfigBash'
+            dependsOn 'buildDocker'
         }
-        task('buildBase') {
+        task('buildConfigBase') {
             description = 'Set the shared parameters used by Packer.'
             packer_args = [
               '-var', "build_date=$build_date",
@@ -195,6 +193,14 @@ subprojects {
               '-var', "package_version=$package_version",
               '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date"
             ]
+        }
+        task('buildConfigAnsible'){
+            packer_filename = 'packer_docker_var_ansible.json'
+            packer_args << packer_filename
+        }
+        task('buildConfigBash'){
+            packer_filename = 'packer_docker_var_bash.json'
+            packer_args << packer_filename
         }
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
         task('validatePackerDocker', type: Exec) {
