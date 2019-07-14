@@ -44,7 +44,6 @@ ext.packer_args = []
 
 task('buildInfoBase') {
     packer_args = [
-      'validate',
       '-var', "build_date=$build_date",
       '-var', "base_image=$base_image",
       '-var', "image_name=$image_name",
@@ -59,13 +58,17 @@ task('buildInfoBash') {
     dependsOn 'buildInfoBase'
     println "called buildInfoBash"
     packer_filename = 'packer_docker_var_ansible.json'
-    packer_args << packer_filename
 }
 task('buildInfo') {
     dependsOn 'buildInfoBash'
     println "called buildInfo"
     println "packer_filename = $packer_filename"
+
+    def packer_args_local = packer_args.clone()
+    packer_args_local.add(0, 'validate')
+    packer_args_local.add(packer_filename)
     println "packer_args = $packer_args"
+    println "packer_args_local = $packer_args_local"
 }
 
 
@@ -196,11 +199,11 @@ subprojects {
         }
         task('buildConfigAnsible'){
             packer_filename = 'packer_docker_var_ansible.json'
-            packer_args << packer_filename
+            packer_args.add(packer_filename)
         }
         task('buildConfigBash'){
             packer_filename = 'packer_docker_var_bash.json'
-            packer_args << packer_filename
+            packer_args.add(packer_filename)
         }
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
         task('validatePackerDocker', type: Exec) {
@@ -212,7 +215,9 @@ subprojects {
         
             workingDir = '../../packer-build'
             executable = 'packer'
-            args = packer_args.add(0, 'validate')
+            def packer_args_local = packer_args.clone()
+            packer_args_local.add(0, 'validate')
+            args = packer_args_local
         }
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
         task('buildDocker', type: Exec) {
@@ -225,7 +230,9 @@ subprojects {
         
             workingDir = '../../packer-build'
             executable = 'packer'
-            args = packer_args.addAll(0, ['build', '-force'])
+            def packer_args_local = packer_args.clone()
+            packer_args_local.addAll(0, ['build', '-force'])
+            args = packer_args_local
 
             outputs.file "manifest.json"
         }
@@ -235,12 +242,12 @@ subprojects {
         // http://jruby-gradle.org/base/#tasks
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html
         task('test', type: JRubyExec) {
-            description = 'Test the Docker image.'
+            description = 'Test, using a Packer Ansible build.'
             dependsOn 'build'
             dependsOn 'testServerspec'
         }
         task('testBash') {
-            description = 'Build.'
+            description = 'Test, using a Packer Bash build.'
             dependsOn 'buildBash'
             dependsOn 'testServerspec'
         }
