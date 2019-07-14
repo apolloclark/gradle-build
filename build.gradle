@@ -170,7 +170,7 @@ subprojects {
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
         task('buildDockerAnsible', type: Exec) {
             description = 'Build the Docker image.'
-            dependsOn 'validatePackerDocker'
+            dependsOn 'validatePackerDockerAnsible'
             inputs.file '../../packer-build/packer_docker_var_ansible.json'
             inputs.files fileTree(dir: "../../scripts")
             inputs.files fileTree(dir: "../../files")
