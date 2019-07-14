@@ -6,6 +6,9 @@ plugins {
   // http://jruby-gradle.org/base
   // https://github.com/jruby-gradle/jruby-gradle-plugin/releases
   id "com.github.jruby-gradle.base" version "1.7.0"
+  
+  // https://plugins.gradle.org/plugin/com.dorongold.task-tree
+  id "com.dorongold.task-tree" version "1.4"
 }
 
 // Import task types
@@ -140,7 +143,7 @@ subprojects {
 
 
 
-        task('build') {
+        task('buildAnsible') {
             description = 'Build, using Ansible to provision.'
 
             dependsOn 'buildConfigBase'
@@ -210,9 +213,9 @@ subprojects {
 
         // http://jruby-gradle.org/base/#tasks
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html
-        task('test', type: JRubyExec) {
+        task('testAnsible', type: JRubyExec) {
             description = 'Test, using a Packer Ansible build.'
-            dependsOn 'build'
+            dependsOn 'buildAnsible'
             dependsOn 'testServerspec'
         }
         task('testBash') {
@@ -237,10 +240,10 @@ subprojects {
 
 
 
-        task('push') {
+        task('pushAnsble') {
             description = 'Clean any previously built images and containers.'
 
-            dependsOn 'test'
+            dependsOn 'testAnsible'
             dependsOn 'pushImage'
             dependsOn 'pushImageDate'
         }
