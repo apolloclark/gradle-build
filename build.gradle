@@ -208,7 +208,7 @@ subprojects {
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
         task('validatePackerDocker', type: Exec) {
             description = 'Validate the Packer file, for Docker.'
-            inputs.file '../../packer-build/$packer_filename'
+            inputs.file "../../packer-build/$packer_filename"
             inputs.files fileTree(dir: "../../scripts")
             inputs.files fileTree(dir: "../../files")
             inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
@@ -223,7 +223,7 @@ subprojects {
         task('buildDocker', type: Exec) {
             description = 'Build the Docker image.'
             dependsOn 'validatePackerDocker'
-            inputs.file '../../packer-build/$packer_filename'
+            inputs.file "../../packer-build/$packer_filename"
             inputs.files fileTree(dir: "../../scripts")
             inputs.files fileTree(dir: "../../files")
             inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
