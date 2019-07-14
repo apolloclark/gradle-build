@@ -171,7 +171,7 @@ subprojects {
         task('buildDocker', type: Exec) {
             description = 'Build the Docker image.'
             dependsOn 'validatePackerDocker'
-            inputs.file '../../packer_docker_var.json'
+            inputs.file '../../packer-builder/packer_docker_var.json'
             inputs.files fileTree(dir: "../../scripts")
             inputs.files fileTree(dir: "../../files")
             inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
