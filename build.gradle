@@ -41,8 +41,9 @@ ext.packer_filename = "default"
 ext.packer_args = []
 
 
+
 task('buildInfoBase') {
-    project.packer_args = [
+    packer_args = [
       'validate',
       '-var', "build_date=$build_date",
       '-var', "base_image=$base_image",
@@ -57,15 +58,17 @@ task('buildInfoBase') {
 task('buildInfoBash') {
     dependsOn 'buildInfoBase'
     println "called buildInfoBash"
-    project.packer_filename = 'packer_docker_var_ansible.json'
-    project.packer_args << project.packer_filename
+    packer_filename = 'packer_docker_var_ansible.json'
+    packer_args << packer_filename
 }
 task('buildInfo') {
     dependsOn 'buildInfoBash'
     println "called buildInfo"
-    println "packer_filename = $project.packer_filename"
+    println "packer_filename = $packer_filename"
     println "packer_args = $packer_args"
 }
+
+
 
 // create dynamic reusable code
 subprojects {
@@ -169,21 +172,21 @@ subprojects {
             description = 'Build, using Ansible to provision.'
 
             dependsOn 'buildBase'
-            project.packer_filename = 'packer_docker_var_ansible.json'
-            project.packer_args << project.packer_filename
+            packer_filename = 'packer_docker_var_ansible.json'
+            packer_args << packer_filename
             tasks['buildDocker']
         }
         task('buildBash') {
             description = 'Build, using Bash to provision.'
 
             dependsOn 'buildBase'
-            project.packer_filename = 'packer_docker_var_bash.json'
-            project.packer_args << project.packer_filename
+            packer_filename = 'packer_docker_var_bash.json'
+            packer_args << packer_filename
             tasks['buildDocker']
         }
         task('buildBase') {
             description = 'Set the shared parameters used by Packer.'
-            project.packer_args = [
+            packer_args = [
               '-var', "build_date=$build_date",
               '-var', "base_image=$base_image",
               '-var', "image_name=$image_name",
@@ -203,7 +206,7 @@ subprojects {
         
             workingDir = '../../packer-build'
             executable = 'packer'
-            args = project.packer_args.add(0, 'validate')
+            args = packer_args.add(0, 'validate')
         }
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
         task('buildDocker', type: Exec) {
@@ -216,7 +219,7 @@ subprojects {
         
             workingDir = '../../packer-build'
             executable = 'packer'
-            args = project.packer_args.addAll(0, ['build', '-force'])
+            args = packer_args.addAll(0, ['build', '-force'])
 
             outputs.file "manifest.json"
         }
@@ -228,6 +231,15 @@ subprojects {
         task('test', type: JRubyExec) {
             description = 'Test the Docker image.'
             dependsOn 'build'
+            dependsOn 'testServerspec'
+        }
+        task('testBash') {
+            description = 'Build.'
+            dependsOn 'buildBash'
+            dependsOn 'testServerspec'
+        }
+        task('testServerspec', type: JRubyExec) {
+            description = 'Test the Docker image, using Serverspec.'
             inputs.files fileTree(dir: "../../spec", includes: ['**/.rb'])
 
             setEnvironment System.getenv()
@@ -239,11 +251,6 @@ subprojects {
             workingDir '../../spec/'
             script "rspec"
             scriptArgs "Dockerfile_${project.image_name}.rb"
-        }
-        task('testBash') {
-            description = 'Build.'
-
-            dependsOn 'buildBash'
         }
 
 
