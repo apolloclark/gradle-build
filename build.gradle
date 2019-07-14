@@ -157,29 +157,36 @@ subprojects {
         }
         task('buildConfigBase') {
             description = 'Set the shared parameters used by Packer.'
-            packer_args = [
-              '-var', "build_date=$build_date",
-              '-var', "base_image=$base_image",
-              '-var', "image_name=$image_name",
-              '-var', "docker_username=$docker_username",
-              '-var', "package_name=$package_name",
-              '-var', "package_version=$package_version",
-              '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date"
-            ]
+            
+            doLast {
+                packer_args = [
+                  '-var', "build_date=$build_date",
+                  '-var', "base_image=$base_image",
+                  '-var', "image_name=$image_name",
+                  '-var', "docker_username=$docker_username",
+                  '-var', "package_name=$package_name",
+                  '-var', "package_version=$package_version",
+                  '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date"
+                ]
+            }
         }
         task('buildConfigAnsible'){
             dependsOn 'buildConfigBase'
 
-            packer_filename = 'packer_docker_var_ansible.json'
-            packer_args.add(packer_filename)
-            println 'called buildConfigAnsible()'
+            doLast {
+                packer_filename = 'packer_docker_var_ansible.json'
+                packer_args.add(packer_filename)
+                println 'called buildConfigAnsible()'
+            }
         }
         task('buildConfigBash'){
             dependsOn 'buildConfigBase'
 
-            packer_filename = 'packer_docker_var_bash.json'
-            packer_args.add(packer_filename)
-            println 'called buildConfigBash()'
+            doLast {
+                packer_filename = 'packer_docker_var_bash.json'
+                packer_args.add(packer_filename)
+                println 'called buildConfigBash()'
+            }
         }
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
         task('validatePackerDocker', type: Exec) {
