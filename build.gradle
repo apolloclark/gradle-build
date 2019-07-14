@@ -172,10 +172,12 @@ subprojects {
         task('buildConfigAnsible'){
             packer_filename = 'packer_docker_var_ansible.json'
             packer_args.add(packer_filename)
+            println 'called buildConfigAnsible()'
         }
         task('buildConfigBash'){
             packer_filename = 'packer_docker_var_bash.json'
             packer_args.add(packer_filename)
+            println 'called buildConfigBash()'
         }
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
         task('validatePackerDocker', type: Exec) {
