@@ -148,12 +148,12 @@ subprojects {
         task('validatePackerDocker', type: Exec) {
             description = 'Validate the Packer file, for Docker.'
             // dependsOn 'clean'
-            inputs.file '../../packer-builder/packer_docker_var.json'
+            inputs.file '../../packer-build/packer_docker_var.json'
             inputs.files fileTree(dir: "../../scripts")
             inputs.files fileTree(dir: "../../files")
             inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
         
-            workingDir = '../../packer-builder'
+            workingDir = '../../packer-build'
             executable = 'packer'
             args = [
               'validate',
@@ -171,12 +171,12 @@ subprojects {
         task('buildDocker', type: Exec) {
             description = 'Build the Docker image.'
             dependsOn 'validatePackerDocker'
-            inputs.file '../../packer-builder/packer_docker_var.json'
+            inputs.file '../../packer-build/packer_docker_var.json'
             inputs.files fileTree(dir: "../../scripts")
             inputs.files fileTree(dir: "../../files")
             inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
         
-            workingDir = '../../packer-builder'
+            workingDir = '../../packer-build'
             executable = 'packer'
             args = [
               'build', '-force',

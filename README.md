@@ -73,5 +73,3 @@ gradle ubuntu16.04:test --project-dir gradle-build --info --rerun-tasks
 
 rm -rf ~/.gradle
 ```
-ejs.org/en/download/releases/
-```
