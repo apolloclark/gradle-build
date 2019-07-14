@@ -73,10 +73,5 @@ gradle ubuntu16.04:test --project-dir gradle-build --info --rerun-tasks
 
 rm -rf ~/.gradle
 ```
-
-## Build Details
-
-```shell
-node.js, 12.4.0, 2019-06-04
-https://nodejs.org/en/download/releases/
+ejs.org/en/download/releases/
 ```

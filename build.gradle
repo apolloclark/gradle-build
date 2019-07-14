@@ -153,7 +153,7 @@ subprojects {
             inputs.files fileTree(dir: "../../files")
             inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
         
-            workingDir = '../../'
+            workingDir = '../../packer-builder'
             executable = 'packer'
             args = [
               'validate',
@@ -176,7 +176,7 @@ subprojects {
             inputs.files fileTree(dir: "../../files")
             inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
         
-            workingDir = '../../'
+            workingDir = '../../packer-builder'
             executable = 'packer'
             args = [
               'build', '-force',
