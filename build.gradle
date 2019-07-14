@@ -146,14 +146,12 @@ subprojects {
         task('buildAnsible') {
             description = 'Build, using Ansible to provision.'
 
-            dependsOn 'buildConfigBase'
             dependsOn 'buildConfigAnsible'
             dependsOn 'buildDocker'
         }
         task('buildBash') {
             description = 'Build, using Bash to provision.'
 
-            dependsOn 'buildConfigBase'
             dependsOn 'buildConfigBash'
             dependsOn 'buildDocker'
         }
@@ -170,11 +168,15 @@ subprojects {
             ]
         }
         task('buildConfigAnsible'){
+            dependsOn 'buildConfigBase'
+
             packer_filename = 'packer_docker_var_ansible.json'
             packer_args.add(packer_filename)
             println 'called buildConfigAnsible()'
         }
         task('buildConfigBash'){
+            dependsOn 'buildConfigBase'
+
             packer_filename = 'packer_docker_var_bash.json'
             packer_args.add(packer_filename)
             println 'called buildConfigBash()'
