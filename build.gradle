@@ -253,7 +253,7 @@ subprojects {
 
 
 
-        task('pushAnsble') {
+        task('pushAnsible') {
             description = 'Clean any previously built images and containers.'
 
             dependsOn 'testAnsible'
