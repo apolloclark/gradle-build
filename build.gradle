@@ -57,6 +57,9 @@ subprojects {
                 password = System.getenv('DOCKER_PASS')
             }
         }
+        ext {
+            packer_args = []
+        }
         task('info', type: GradleBuild) {
             tasks = ['whoami', 'path', 'docker', 'dockerVersion', 'ansiblePlaybook', 'ansiblePlaybookVersion']
         }
