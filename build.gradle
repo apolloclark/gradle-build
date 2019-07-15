@@ -145,78 +145,70 @@ subprojects {
 
         task('buildAnsible') {
             description = 'Build, using Ansible to provision.'
-
             dependsOn 'buildConfigAnsible'
             dependsOn 'buildDocker'
         }
         task('buildBash') {
             description = 'Build, using Bash to provision.'
-
             dependsOn 'buildConfigBash'
             dependsOn 'buildDocker'
         }
         task('buildConfigBase') {
             description = 'Set the shared parameters used by Packer.'
-            
-            doLast {
-                packer_args = [
-                  '-var', "build_date=$build_date",
-                  '-var', "base_image=$base_image",
-                  '-var', "image_name=$image_name",
-                  '-var', "docker_username=$docker_username",
-                  '-var', "package_name=$package_name",
-                  '-var', "package_version=$package_version",
-                  '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date"
-                ]
-            }
+            packer_args = [
+              '-var', "build_date=$build_date",
+              '-var', "base_image=$base_image",
+              '-var', "image_name=$image_name",
+              '-var', "docker_username=$docker_username",
+              '-var', "package_name=$package_name",
+              '-var', "package_version=$package_version",
+              '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date"
+            ]
         }
-        task('buildConfigAnsible'){
+        task('buildConfigAnsible') {
             dependsOn 'buildConfigBase'
-
-            doLast {
+            doLast{    
                 packer_filename = 'packer_docker_var_ansible.json'
                 packer_args.add(packer_filename)
                 println 'called buildConfigAnsible()'
             }
         }
-        task('buildConfigBash'){
+        task('buildConfigBash') {
             dependsOn 'buildConfigBase'
-
-            doLast {
+            doLast{
                 packer_filename = 'packer_docker_var_bash.json'
                 packer_args.add(packer_filename)
                 println 'called buildConfigBash()'
             }
         }
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
-        task('validatePackerDocker', type: Exec) {
+        task('validatePackerDocker') {
             description = 'Validate the Packer file, for Docker.'
-            inputs.file "../../packer-build/$project.packer_filename"
-            inputs.files fileTree(dir: "../../scripts")
-            inputs.files fileTree(dir: "../../files")
-            inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
-
-            workingDir = '../../packer-build'
-            executable = 'packer'
-            def packer_args_local = packer_args.clone()
-            packer_args_local.add(0, 'validate')
-            args = packer_args_local
+            inputs.files fileTree(dir: "../../",
+                includes: ['packer/*.json', 'scripts/*', 'files/*', 'ansible/*.yml'])
+            doLast {
+                exec {
+                    workingDir = '../packer-build'
+                    executable = 'packer'
+                    def packer_args_local = packer_args.clone()
+                    packer_args_local.add(0, 'validate')
+                    args = packer_args_local
+                }
+            }
         }
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
-        task('buildDocker', type: Exec) {
+        task('buildDocker') {
             description = 'Build the Docker image.'
             dependsOn 'validatePackerDocker'
-            inputs.file "../../packer-build/$project.packer_filename"
-            inputs.files fileTree(dir: "../../scripts")
-            inputs.files fileTree(dir: "../../files")
-            inputs.files fileTree(dir: "../../ansible", includes: ['**/*.yml'])
-
-            workingDir = '../../packer-build'
-            executable = 'packer'
-            def packer_args_local = packer_args.clone()
-            packer_args_local.addAll(0, ['build', '-force'])
-            args = packer_args_local
-
+            doLast {
+                exec {
+                    workingDir = '../packer-build'
+                    executable = 'packer'
+                    def packer_args_local = packer_args.clone()
+                    packer_args_local.addAll(0, ['build', '-force'])
+                    args = packer_args_local
+                }
+            }
             outputs.file "manifest.json"
         }
 
@@ -224,10 +216,9 @@ subprojects {
 
         // http://jruby-gradle.org/base/#tasks
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html
-        task('testAnsible', type: JRubyExec) {
+        task('testAnsible') {
             description = 'Test, using a Packer Ansible build.'
-            dependsOn 'buildAnsible'
-            dependsOn 'testServerspec'
+            dependsOn 'buildAnsible' 
         }
         task('testBash') {
             description = 'Test, using a Packer Bash build.'
