@@ -185,7 +185,7 @@ subprojects {
         task('validatePackerDocker') {
             description = 'Validate the Packer file, for Docker.'
             inputs.files fileTree(dir: "../../",
-                includes: ['packer/*.json', 'scripts/*', 'files/*', 'ansible/*.yml'])
+                includes: ['**/packer/*.json', '**/scripts/*', '**/files/*', '**/ansible/*.yml'])
             doLast {
                 exec {
                     workingDir = '../packer-build'
