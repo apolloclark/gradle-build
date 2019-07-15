@@ -160,18 +160,19 @@ subprojects {
             description = 'Set the shared parameters used by Packer.'
             doLast {
                 // allow for configuring to use different base images
-                if (base_image_lang == true) {
-                  project.base_image =
-                      "$base_image_lang_repo:$base_image_lang_tag_prefix${project.image_name}"
+                def base_image_lang_boolean = base_image_lang.toBoolean()
+                if (base_image_lang.toBoolean() == true) {
+                    base_image =
+                        "$base_image_lang_repo:$base_image_lang_tag_prefix$image_name"
                 }
-                project.packer_args = [
+                packer_args = [
                   '-var', "build_date=$build_date",
-                  '-var', "base_image=${project.base_image}",
-                  '-var', "image_name=${project.image_name}",
+                  '-var', "base_image=$base_image",
+                  '-var', "image_name=$image_name",
                   '-var', "docker_username=$docker_username",
                   '-var', "package_name=$package_name",
                   '-var', "package_version=$package_version",
-                  '-var', "ansible_host=$package_name-$package_version-${project.image_name}-$build_date"
+                  '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date"
                 ]
             }
         }
@@ -179,16 +180,14 @@ subprojects {
             dependsOn 'buildConfigBase'
             doLast {    
                 packer_filename = 'packer_docker_var_ansible.json'
-                project.packer_args.add(packer_filename)
-                println 'called buildConfigAnsible()'
+                packer_args.add(packer_filename)
             }
         }
         task('buildConfigBash') {
             dependsOn 'buildConfigBase'
             doLast {
                 packer_filename = 'packer_docker_var_bash.json'
-                project.packer_args.add(packer_filename)
-                println 'called buildConfigBash()'
+                packer_args.add(packer_filename)
             }
         }
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
@@ -200,7 +199,7 @@ subprojects {
                 exec {
                     workingDir = '../packer-build'
                     executable = 'packer'
-                    def packer_args_local = project.packer_args.clone()
+                    def packer_args_local = packer_args.clone()
                     packer_args_local.add(0, 'validate')
                     args = packer_args_local
                 }
@@ -214,7 +213,7 @@ subprojects {
                 exec {
                     workingDir = '../packer-build'
                     executable = 'packer'
-                    def packer_args_local = project.packer_args.clone()
+                    def packer_args_local = packer_args.clone()
                     packer_args_local.addAll(0, ['build', '-force'])
                     args = packer_args_local
                 }
@@ -244,7 +243,7 @@ subprojects {
             environment DOCKER_USERNAME : "$docker_username"
             environment PACKAGE_NAME    : "$package_name"
             environment PACKAGE_VERSION : "$package_version"
-            environment IMAGE_NAME      : "${project.image_name}"
+            environment IMAGE_NAME      : "$image_name"
 
             workingDir '../../spec/'
             script "rspec"
