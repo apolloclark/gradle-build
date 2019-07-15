@@ -221,7 +221,8 @@ subprojects {
         // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html
         task('testAnsible') {
             description = 'Test, using a Packer Ansible build.'
-            dependsOn 'buildAnsible' 
+            dependsOn 'buildAnsible'
+            dependsOn 'testServerspec'
         }
         task('testBash') {
             description = 'Test, using a Packer Bash build.'
