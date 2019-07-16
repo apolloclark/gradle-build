@@ -146,34 +146,17 @@ subprojects {
 
 
 
-        task('buildAnsible') {
-            description = 'Build, using Ansible to provision.'
-            dependsOn 'buildConfigAnsible'
-            dependsOn 'buildDocker'
-        }
-        task('buildBash') {
-            description = 'Build, using Bash to provision.'
-            dependsOn 'buildConfigBash'
-            dependsOn 'buildDocker'
-        }
-        task('buildConfigBase') {
-            description = 'Set the shared parameters used by Packer.'
-            doLast {
-                // allow for configuring to use different base images
-                def base_image_lang_boolean = base_image_lang.toBoolean()
-                if (base_image_lang.toBoolean() == true) {
-                    base_image =
-                        "$base_image_lang_repo:$base_image_lang_tag_prefix$image_name"
-                }
-                packer_args = [
-                  '-var', "build_date=$build_date",
-                  '-var', "base_image=$base_image",
-                  '-var', "image_name=$image_name",
-                  '-var', "docker_username=$docker_username",
-                  '-var', "package_name=$package_name",
-                  '-var', "package_version=$package_version",
-                  '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date"
-                ]
+        task('build') {
+            description = 'Build the Docker images'
+            if (builder == 'ansible') {
+                dependsOn 'buildConfigAnsible'
+                dependsOn 'buildDocker'
+            } else if (builder == 'bash') {
+                dependsOn 'buildConfigBash'
+                dependsOn 'buildDocker'
+            } else {
+                println "ERROR: please define the 'builder' setting within the gradle.properties file as either 'ansible' or 'bash'."
+                throw new Exception("Undefined 'builder' setting in project")
             }
         }
         task('buildConfigAnsible') {
@@ -190,12 +173,31 @@ subprojects {
                 packer_args.add(packer_filename)
             }
         }
-        // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
+        task('buildConfigBase') {
+            description = 'Set the shared parameters used by Packer.'
+            doLast {
+                // allow for configuring to use different base images
+                if (base_image_lang.toBoolean() == true) {
+                    base_image =
+                        "$base_image_lang_repo:$base_image_lang_tag_prefix$image_name"
+                }
+                packer_args = [
+                  '-var', "build_date=$build_date",
+                  '-var', "base_image=$base_image",
+                  '-var', "image_name=$image_name",
+                  '-var', "docker_username=$docker_username",
+                  '-var', "package_name=$package_name",
+                  '-var', "package_version=$package_version",
+                  '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date"
+                ]
+            }
+        }
         task('validatePackerDocker') {
             description = 'Validate the Packer file, for Docker.'
             inputs.files fileTree(dir: "../../",
                 includes: ['**/packer/*.json', '**/scripts/*', '**/files/*', '**/ansible/*.yml'])
             doLast {
+                // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
                 exec {
                     workingDir = '../packer-build'
                     executable = 'packer'
@@ -205,11 +207,11 @@ subprojects {
                 }
             }
         }
-        // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
         task('buildDocker') {
             description = 'Build the Docker image.'
             dependsOn 'validatePackerDocker'
             doLast {
+                // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Exec.html
                 exec {
                     workingDir = '../packer-build'
                     executable = 'packer'
