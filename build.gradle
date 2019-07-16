@@ -150,14 +150,13 @@ subprojects {
             description = 'Build the Docker images'
             if (builder == 'ansible') {
                 dependsOn 'buildConfigAnsible'
-                dependsOn 'buildDocker'
             } else if (builder == 'bash') {
                 dependsOn 'buildConfigBash'
-                dependsOn 'buildDocker'
             } else {
                 println "ERROR: please define the 'builder' setting within the gradle.properties file as either 'ansible' or 'bash'."
                 throw new Exception("Undefined 'builder' setting in project")
             }
+            dependsOn 'buildDocker'
         }
         task('buildConfigAnsible') {
             dependsOn 'buildConfigBase'
@@ -227,16 +226,8 @@ subprojects {
 
         task('test') {
             description = 'Test the Docker images'
-            if (builder == 'ansible') {
-                dependsOn 'buildAnsible'
-                dependsOn 'testServerspec'
-            } else if (builder == 'bash') {
-                dependsOn 'buildBash'
-                dependsOn 'testServerspec'
-            } else {
-                println "ERROR: please define the 'builder' setting within the gradle.properties file as either 'ansible' or 'bash'."
-                throw new Exception("Undefined 'builder' setting in project")
-            }
+            dependsOn 'build'
+            dependsOn 'testServerspec'
         }
         task('testServerspec', type: JRubyExec) {
             description = 'Test the Docker image, using Serverspec.'
@@ -257,18 +248,9 @@ subprojects {
 
         task('push') {
             description = 'Push the Docker images'
-            if (builder == 'ansible') {
-                dependsOn 'testAnsible'
-                dependsOn 'pushImage'
-                dependsOn 'pushImageDate'
-            } else if (builder == 'bash') {
-                dependsOn 'testBash'
-                dependsOn 'pushImage'
-                dependsOn 'pushImageDate'
-            } else {
-                println "ERROR: please define the 'builder' setting within the gradle.properties file as either 'ansible' or 'bash'."
-                throw new Exception("Undefined 'builder' setting in project")
-            }
+            dependsOn 'test'
+            dependsOn 'pushImage'
+            dependsOn 'pushImageDate'
         }
         task('pushImage', type: DockerPushImage) {
             description = 'Push a Docker image.'
