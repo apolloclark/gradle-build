@@ -180,6 +180,11 @@ subprojects {
                     base_image =
                         "$base_image_lang_repo:$base_image_lang_tag_prefix$image_name"
                 }
+                // allow for using package major versioning
+                if (package_version ==~ /(\d+).x/ ) {
+                    package_version = (package_version =~ /(\d+).x/)[0][1]
+                    println "[INFO] package_version = $package_version"
+                }
                 packer_args = [
                   '-var', "build_date=$build_date",
                   '-var', "base_image=$base_image",
@@ -249,16 +254,15 @@ subprojects {
         task('push') {
             description = 'Push the Docker images'
             dependsOn 'test'
-            dependsOn 'pushImage'
-            dependsOn 'pushImageDate'
+            dependsOn 'pushImageVersionMinor'
+            dependsOn 'pushImageVersionMinorDate'
         }
-        task('pushImage', type: DockerPushImage) {
+        task('pushImageVersionMinor', type: DockerPushImage) {
             description = 'Push a Docker image.'
             imageName = "$docker_username/$package_name"
             tag = "$package_version-${project.image_name}"
-
         }
-        task('pushImageDate', type: DockerPushImage) {
+        task('pushImageVersionMinorDate', type: DockerPushImage) {
             description = 'Clean any previously built images.'
             imageName = "$docker_username/$package_name"
             tag = "$package_version-${project.image_name}-$build_date"
