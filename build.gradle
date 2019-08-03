@@ -256,6 +256,12 @@ subprojects {
             dependsOn 'test'
             dependsOn 'pushImageVersionMinor'
             dependsOn 'pushImageVersionMinorDate'
+            doLast {
+                // allow for using package major versioning
+                if (package_version ==~ /(\d+).x/ ) {
+                    package_version = (package_version =~ /(\d+).x/)[0][1]
+                }
+            }
         }
         task('pushImageVersionMinor', type: DockerPushImage) {
             description = 'Push a Docker image.'
