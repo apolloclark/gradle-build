@@ -181,6 +181,7 @@ subprojects {
                         "$base_image_lang_repo:$base_image_lang_tag_prefix$image_name"
                 }
                 // allow for using package major versioning
+                println "[INFO] package_version = $package_version"
                 if (package_version ==~ /(\d+).x/ ) {
                     package_version = (package_version =~ /(\d+).x/)[0][1]
                     println "[INFO] package_version = $package_version"
@@ -254,13 +255,14 @@ subprojects {
         task('push') {
             description = 'Push the Docker images'
             dependsOn 'test'
+            dependsOn 'pushConfig'
             dependsOn 'pushImageVersionMinor'
             dependsOn 'pushImageVersionMinorDate'
-            doLast {
-                // allow for using package major versioning
-                if (package_version ==~ /(\d+).x/ ) {
-                    package_version = (package_version =~ /(\d+).x/)[0][1]
-                }
+        }
+        task('pushConfig') {
+            // allow for using package major versioning
+            if (package_version ==~ /(\d+).x/ ) {
+                package_version = (package_version =~ /(\d+).x/)[0][1]
             }
         }
         task('pushImageVersionMinor', type: DockerPushImage) {
