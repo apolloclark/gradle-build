@@ -5,5 +5,5 @@
  * Learn how to create Gradle builds at https://guides.gradle.org/creating-new-gradle-builds/
  */
 
-ext.base_image      = "centos:7.6.1810"
-ext.image_name      = "centos7.6"
+ext.base_image      = "apolloclark/ubi8:8"
+ext.image_name      = "rhel8"

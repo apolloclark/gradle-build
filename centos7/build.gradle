@@ -5,5 +5,5 @@
  * Learn how to create Gradle builds at https://guides.gradle.org/creating-new-gradle-builds/
  */
 
-ext.base_image      = "amazonlinux:1"
-ext.image_name      = "amzlinux1"
+ext.base_image      = "centos:7"
+ext.image_name      = "centos7"

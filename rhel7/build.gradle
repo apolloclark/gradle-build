@@ -5,5 +5,5 @@
  * Learn how to create Gradle builds at https://guides.gradle.org/creating-new-gradle-builds/
  */
 
-ext.base_image      = "apolloclark/ubi7:7.6"
-ext.image_name      = "rhel7.6"
+ext.base_image      = "apolloclark/ubi7:7"
+ext.image_name      = "rhel7"
