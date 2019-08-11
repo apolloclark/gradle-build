@@ -194,6 +194,7 @@ subprojects {
                   '-var', "package_name=$package_name",
                   '-var', "package_version=$package_version",
                   '-var', "ansible_host=$package_name-$package_version-$image_name-$build_date"
+                  '-var-file', "packer_vars.json"
                 ]
             }
         }
