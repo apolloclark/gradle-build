@@ -6,4 +6,4 @@
  */
 
 ext.base_image      = "amazonlinux:2"
-ext.image_name      = "amzlinux1"
+ext.image_name      = "amzlinux2"
